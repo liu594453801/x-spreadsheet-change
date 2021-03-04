@@ -1,6 +1,6 @@
 /* global window */
 import { h } from './element';
-import { bind, mouseMoveUp, bindTouch, createEventEmitter } from './event';
+import { bind, mouseMoveUp, bindTouch } from './event';
 import Resizer from './resizer';
 import Scrollbar from './scrollbar';
 import Selector from './selector';
@@ -63,11 +63,17 @@ function scrollbarMove() {
 }
 
 function selectorSet(multiple, ri, ci, indexesUpdated = true, moving = false) {
-  if (ri === -1 && ci === -1) return;
-  const {
+	const {
     table, selector, toolbar, data,
     contextMenu,
   } = this;
+	//代码库修改
+	if (data.cols.len == ci) { //点击加号按钮
+		// this.trigger('cell-selected', null, ri, ci);
+		return;
+	}
+  if (ri === -1 && ci === -1) return;
+  
   contextMenu.setMode((ri === -1 || ci === -1) ? 'row-col' : 'range');
   const cell = data.getCell(ri, ci);
   if (multiple) {
@@ -138,6 +144,11 @@ function overlayerMousemove(evt) {
   }
   const tRect = tableEl.box();
   const cRect = data.getCellRectByXY(evt.offsetX, evt.offsetY);
+	//代码库修改
+	if (cRect.colLen == cRect.ci) { //点击加号按钮
+		// this.trigger('cell-selected', null, ri, ci);
+		return;
+	}
   if (cRect.ri >= 0 && cRect.ci === -1) {
     cRect.width = cols.indexWidth;
     rowResizer.show(cRect, {
@@ -166,11 +177,11 @@ function overlayerMousemove(evt) {
   }
 }
 
-// let scrollThreshold = 15;
+let scrollThreshold = 15;
 function overlayerMousescroll(evt) {
-  // scrollThreshold -= 1;
-  // if (scrollThreshold > 0) return;
-  // scrollThreshold = 15;
+  scrollThreshold -= 1;
+  if (scrollThreshold > 0) return;
+  scrollThreshold = 15;
 
   const { verticalScrollbar, horizontalScrollbar, data } = this;
   const { top } = verticalScrollbar.scroll();
@@ -312,7 +323,6 @@ function clearClipboard() {
 function copy() {
   const { data, selector } = this;
   data.copy();
-  data.copyToSystemClipboard();
   selector.showClipboard();
 }
 
@@ -360,7 +370,7 @@ function toolbarChangePaintformatPaste() {
 }
 
 function overlayerMousedown(evt) {
-  // console.log(':::::overlayer.mousedown:', evt.detail, evt.button, evt.buttons, evt.shiftKey);
+  console.log(':::::overlayer.mousedown:', evt.detail, evt.button, evt.buttons, evt.shiftKey);
   // console.log('evt.target.className:', evt.target.className);
   const {
     selector, data, table, sortFilter,
@@ -369,9 +379,14 @@ function overlayerMousedown(evt) {
   const isAutofillEl = evt.target.className === `${cssPrefix}-selector-corner`;
   const cellRect = data.getCellRectByXY(offsetX, offsetY);
   const {
-    left, top, width, height,
+    left, top, width, height, colLen
   } = cellRect;
   let { ri, ci } = cellRect;
+	//代码库修改
+	if (colLen == ci) { //点击加号按钮
+		this.trigger('cell-selected', null, ri, ci);
+		return;
+	}
   // sort or filter
   const { autoFilter } = data;
   if (autoFilter.includes(ri, ci)) {
@@ -501,8 +516,15 @@ function insertDeleteRowColumn(type) {
   } else if (type === 'delete-row') {
     data.delete('row');
   } else if (type === 'insert-column') {
-    data.insert('column');
+		//代码库修改
+		this.trigger('col-added',msg=>{
+			if (msg.add) {
+				data.insert('column');
+			}
+		});
   } else if (type === 'delete-column') {
+		//代码库修改
+		this.trigger('col-deleted');
     data.delete('column');
   } else if (type === 'delete-cell') {
     data.deleteCell();
@@ -550,12 +572,19 @@ function toolbarChange(type, value) {
     } else {
       this.freeze(0, 0);
     }
-  } else {
+  }else {
     data.setSelectedCellAttr(type, value);
     if (type === 'formula' && !data.selector.multiple()) {
       editorSet.call(this);
     }
     sheetReset.call(this);
+		if (type === 'sumportrait') {
+			// 纵向求和
+			this.trigger('sum-portrait',value);
+		} else if (type === 'sumlandscape') {
+			// 横向求和
+			this.trigger('sum-landscape',value);
+		}  
   }
 }
 
@@ -694,7 +723,6 @@ function sheetInitEvents() {
   });
 
   bind(window, 'paste', (evt) => {
-    if(!this.focusing) return;
     paste.call(this, 'all', evt);
     evt.preventDefault();
   });
@@ -850,8 +878,8 @@ function sheetInitEvents() {
 
 export default class Sheet {
   constructor(targetEl, data) {
-    this.eventMap = createEventEmitter();
-    const { view, showToolbar, showContextmenu } = data.settings;
+    this.eventMap = new Map();
+    const { view, showToolbar, showContextmenu,showContextmenuAddCol } = data.settings;
     this.el = h('div', `${cssPrefix}-sheet`);
     this.toolbar = new Toolbar(data, view.width, !showToolbar);
     this.print = new Print(data);
@@ -874,7 +902,7 @@ export default class Sheet {
     // data validation
     this.modalValidation = new ModalValidation();
     // contextMenu
-    this.contextMenu = new ContextMenu(() => this.getRect(), !showContextmenu);
+    this.contextMenu = new ContextMenu(() => this.getRect(), !showContextmenu,showContextmenuAddCol,data.cols.len);
     // selector
     this.selector = new Selector(data);
     this.overlayerCEl = h('div', `${cssPrefix}-overlayer-content`)
@@ -907,13 +935,15 @@ export default class Sheet {
   }
 
   on(eventName, func) {
-    this.eventMap.on(eventName, func);
+    this.eventMap.set(eventName, func);
     return this;
   }
 
   trigger(eventName, ...args) {
     const { eventMap } = this;
-    eventMap.fire(eventName, args)
+    if (eventMap.has(eventName)) {
+      eventMap.get(eventName).call(this, ...args);
+    }
   }
 
   resetData(data) {

@@ -44,7 +44,7 @@ class Spreadsheet {
       this.sheet.trigger('change', ...args);
     };
     this.datas.push(d);
-    // console.log('d:', n, d, this.datas);
+    console.log('d:', n, d, this.datas);
     this.bottombar.addItem(n, active);
     this.sheetIndex += 1;
     return d;

@@ -133,4 +133,8 @@ export default {
       neq: '不等于',
     },
   },
+	sum: {
+    landscape: '横向求和',
+    portrait: '纵向求和',
+  },
 };

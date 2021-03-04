@@ -133,4 +133,8 @@ export default {
       neq: 'not equal to',
     },
   },
+	sum: {
+    landscape: 'Landscape Sum',
+    portrait: 'Portrait Sum',
+  },
 };

@@ -22,6 +22,8 @@ import Redo from './redo';
 import Undo from './undo';
 import Print from './print';
 import Textwrap from './textwrap';
+import SumLandscape from './sum_landscape';
+import SumPortrait from './sum_portrait';
 import More from './more';
 
 import { h } from '../element';
@@ -90,8 +92,9 @@ export default class Toolbar {
     this.items = [
       [
         this.undoEl = new Undo(),
-        this.redoEl = new Redo(),
-        new Print(),
+				this.redoEl = new Redo(),
+				//代码库修改，屏蔽打印预览
+        // new Print(),
         this.paintformatEl = new Paintformat(),
         this.clearformatEl = new Clearformat(),
       ],
@@ -123,14 +126,23 @@ export default class Toolbar {
         this.alignEl = new Align(style.align),
         this.valignEl = new Valign(style.valign),
         this.textwrapEl = new Textwrap(),
+				//代码库修改，屏蔽打印预览
+				this.moreEl = new More(),
       ],
-      buildDivider(),
-      [
-        this.freezeEl = new Freeze(),
-        this.autofilterEl = new Autofilter(),
-        this.formulaEl = new Formula(),
-        this.moreEl = new More(),
-      ],
+			//代码库修改，屏蔽打印预览
+      // buildDivider(),
+      // [
+			// 	this.sumlandscapeEl = new SumLandscape(),
+      // ],
+			// buildDivider(),
+      // [
+			// 	this.sumportraitEl = new SumPortrait(),
+      //   // this.freezeEl = new Freeze(),
+      //   // this.autofilterEl = new Autofilter(),
+      //   // this.formulaEl = new Formula(),
+			// 	//代码库修改，屏蔽打印预览
+			// 	this.moreEl = new More(),
+      // ],
     ];
 
     this.el = h('div', `${cssPrefix}-toolbar`);
@@ -188,10 +200,11 @@ export default class Toolbar {
     // console.log('canUndo:', data.canUndo());
     this.undoEl.setState(!data.canUndo());
     this.redoEl.setState(!data.canRedo());
-    this.mergeEl.setState(data.canUnmerge(), !data.selector.multiple());
-    this.autofilterEl.setState(!data.canAutofilter());
+		this.mergeEl.setState(data.canUnmerge(), !data.selector.multiple());
+		//代码库修改，屏蔽筛选
+    // this.autofilterEl.setState(!data.canAutofilter());
     // this.mergeEl.disabled();
-    // console.log('selectedCell:', style, cell);
+    console.log('selectedCell:', style);
     const { font, format } = style;
     this.formatEl.setState(format);
     this.fontEl.setState(font.name);
@@ -205,7 +218,9 @@ export default class Toolbar {
     this.alignEl.setState(style.align);
     this.valignEl.setState(style.valign);
     this.textwrapEl.setState(style.textwrap);
+		// this.sumlandscapeEl.setState(style.sumlandscape,data.selector.multiple());
+		// this.sumportraitEl.setState(style.sumportrait,data.selector.multiple());
     // console.log('freeze is Active:', data.freezeIsActive());
-    this.freezeEl.setState(data.freezeIsActive());
+    // this.freezeEl.setState(data.freezeIsActive());
   }
 }

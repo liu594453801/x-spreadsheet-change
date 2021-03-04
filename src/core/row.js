@@ -84,14 +84,18 @@ class Rows {
   }
 
   getCellOrNew(ri, ci) {
-    const row = this.getOrNew(ri);
+    let row = this.getOrNew(ri);
     row.cells[ci] = row.cells[ci] || {};
     return row.cells[ci];
   }
 
   // what: all | text | format
   setCell(ri, ci, cell, what = 'all') {
-    const row = this.getOrNew(ri);
+    let row = this.getOrNew(ri);
+		// console.log('row ::', row);
+		// console.log('row setCell::', cell,what);
+		// console.log('setCell cell:', this);
+		// console.log('setCell cell:', cell);
     if (what === 'all') {
       row.cells[ci] = cell;
     } else if (what === 'text') {
@@ -105,8 +109,10 @@ class Rows {
   }
 
   setCellText(ri, ci, text) {
-    const cell = this.getCellOrNew(ri, ci);
+    let cell = this.getCellOrNew(ri, ci);
     cell.text = text;
+		// console.log('row setCellText this::', this);
+		// console.log('row setCellText cell::', cell);
   }
 
   // what: all | format | text
@@ -260,6 +266,7 @@ class Rows {
       });
       row.cells = rndata;
     });
+
   }
 
   deleteColumn(sci, eci) {

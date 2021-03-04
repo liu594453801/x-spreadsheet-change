@@ -4,8 +4,14 @@ import Icon from '../icon';
 export default class ToggleItem extends Item {
   element() {
     const { tag } = this;
+		let childObj = null;
+		if (tag === 'sumlandscape' || tag === "sumportrait") {
+			childObj = tag === 'sumlandscape'?"横向求和":"纵向求和";
+		}else{
+			childObj = new Icon(tag);
+		}
     return super.element()
-      .child(new Icon(tag))
+      .child(childObj)
       .on('click', () => this.click());
   }
 

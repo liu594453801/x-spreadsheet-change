@@ -136,6 +136,11 @@ class Draw {
     this.ctx = el.getContext('2d');
     this.resize(width, height);
     this.ctx.scale(dpr(), dpr());
+		this.ctx.onclick = e=>{
+			let p = this.getEventPosition(e);
+      let result = this.draw(p);
+      console.log(result);
+		};
   }
 
   resize(width, height) {
@@ -273,7 +278,6 @@ class Draw {
     const { ctx } = this;
     ctx.lineWidth = thinLineWidth;
     ctx.strokeStyle = color;
-    // console.log('style:', style);
     if (style === 'medium') {
       ctx.lineWidth = npx(2) - 0.5;
     } else if (style === 'thick') {
@@ -392,6 +396,52 @@ class Draw {
     dtextcb();
     ctx.restore();
   }
+	getEventPosition(e) {
+			var x, y;
+			if (e.layerX || e.layerX == 0) {
+					x = e.layerX;
+					y = e.layerY;
+			} else if (e.offsetX || e.offsetX == 0) { // Opera
+					x = e.offsetX;
+					y = e.offsetY;
+			}
+			return { x: x, y: y };
+	}
+	draw(p) {
+			var who = [];
+			ctx.clearRect(0, 0, dom.canvas[0].width, dom.canvas[0].height);
+			arr.forEach(function(v, i) {
+					ctx.beginPath();
+					ctx.rect(v.x, v.y, v.width, v.height);
+					ctx.stroke();
+					if (p && ctx.isPointInPath(p.x, p.y)) {
+							//如果传入了事件坐标，就用isPointInPath判断一下
+							//如果当前环境覆盖了该坐标，就将当前环境的index值放到数组里
+							who.push(i);
+					}
+			});
+			//根据数组中的index值，可以到arr数组中找到相应的元素。
+			return who;
+	}
+	addColImg(x,y,width,height){
+		const { ctx } = this;
+
+		let ax = x+5+10;
+		let ay = 12+y;
+		ctx.beginPath();
+		ctx.moveTo(ax-5,y+height/2);
+		ctx.lineTo(ax-5+10,y+height/2);
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.moveTo(ax,y+height/2-5);
+		ctx.lineTo(ax,y+height/2+5);
+		ctx.stroke();
+
+		ctx.beginPath();
+		ctx.arc(ax,ay,10,0,2*Math.PI);
+		ctx.stroke();
+	}
 }
 
 export default {};

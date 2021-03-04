@@ -68,7 +68,8 @@ function rangeReduceIf(min, max, inits, initv, ifv, getv) {
   let s = inits;
   let v = initv;
   let i = min;
-  for (; i < max; i += 1) {
+	//代码库修改
+  for (; i < max+1; i += 1) {
     if (s > ifv) break;
     v = getv(i);
     s += v;

@@ -49,8 +49,9 @@ function buildMenu() {
 class ContextMenu {
   constructor() {
     this.el = h('div', `${cssPrefix}-contextmenu`)
-      .css('width', '160px')
-      .children(...buildMenu.call(this))
+			.css('width', '160px')
+			//代码库修改，屏蔽删除按钮
+      // .children(...buildMenu.call(this))
       .hide();
     this.itemClick = () => {};
   }
@@ -84,14 +85,19 @@ export default class Bottombar {
       this.clickSwap2(this.items[i]);
     });
     this.contextMenu = new ContextMenu();
-    this.contextMenu.itemClick = deleteFunc;
+    // this.contextMenu.itemClick = deleteFunc;
     this.el = h('div', `${cssPrefix}-bottombar`).children(
       this.contextMenu.el,
       this.menuEl = h('ul', `${cssPrefix}-menu`).child(
         h('li', '').children(
-          new Icon('add').on('click', () => {
-            addFunc();
-          }),
+					//代码库修改，屏蔽加号
+          // new Icon('add').on('click', () => {
+          //   if (this.dataNames.length < 10) {
+          //     addFunc();
+          //   } else {
+          //     xtoast('tip', 'it less than or equal to 10');
+          //   }
+          // }),
           h('span', '').child(this.moreEl),
         ),
       ),

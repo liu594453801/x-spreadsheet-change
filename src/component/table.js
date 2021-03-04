@@ -56,17 +56,18 @@ export function renderCell(draw, data, rindex, cindex, yoffset = 0) {
   if (sortedRowMap.has(rindex)) {
     nrindex = sortedRowMap.get(rindex);
   }
-
   const cell = data.getCell(nrindex, cindex);
   if (cell === null) return;
   let frozen = false;
   if ('editable' in cell && cell.editable === false) {
     frozen = true;
   }
-
+	// console.log('renderCell data:', data);
+	// console.log('dbox cell:', cell);
   const style = data.getCellStyleOrDefault(nrindex, cindex);
   const dbox = getDrawBox(data, rindex, cindex, yoffset);
   dbox.bgcolor = style.bgcolor;
+	// console.log('dbox style:', style);
   if (style.border !== undefined) {
     dbox.setBorders(style.border);
     // bboxes.push({ ri: rindex, ci: cindex, box: dbox });
@@ -74,19 +75,14 @@ export function renderCell(draw, data, rindex, cindex, yoffset = 0) {
   }
   draw.rect(dbox, () => {
     // render text
-    let cellText = "";
-    if(!data.settings.evalPaused) {
-      cellText = _cell.render(cell.text || '', formulam, (y, x) => (data.getCellTextOrDefault(x, y)));
-    } else {
-      cellText = cell.text || '';
-    }
+    let cellText = _cell.render(cell.text || '', formulam, (y, x) => (data.getCellTextOrDefault(x, y)));
     if (style.format) {
       // console.log(data.formatm, '>>', cell.format);
       cellText = formatm[style.format].render(cellText);
     }
     const font = Object.assign({}, style.font);
     font.size = getFontSizePxByPt(font.size);
-    // console.log('style:', style);
+    // console.log('draw.rect style:', style);
     draw.text(cellText, dbox, {
       align: style.align,
       valign: style.valign,
@@ -222,7 +218,7 @@ function renderFixedHeaders(type, viewRange, w, h, tx, ty) {
       }
     });
     draw.line([0, sumHeight + nty], [w, sumHeight + nty]);
-    draw.line([w, nty], [w, sumHeight + nty]);
+		draw.line([w, nty], [w, sumHeight + nty]);
   }
   // x-header-text
   if (type === 'all' || type === 'top') {
@@ -253,6 +249,22 @@ function renderFixedLeftTopCell(fw, fh) {
   // left-top-cell
   draw.attr({ fillStyle: '#f4f5f8' })
     .fillRect(0, 0, fw, fh);
+  draw.restore();
+}
+
+function renderFixedRightTopAddCol(type, viewRange, fw, fh, tx, ty) {
+	const { draw, data } = this;
+  const sumHeight = viewRange.h; // rows.sumHeight(viewRange.sri, viewRange.eri + 1);
+  const sumWidth = viewRange.w; // cols.sumWidth(viewRange.sci, viewRange.eci + 1);
+  const nty = sumHeight + fh;
+  const ntx = sumWidth + fw + 10;
+
+	// console.log("sumHeight, sumWidth, ntx, nty...",sumHeight, sumWidth, ntx, nty);
+	// draw.fillText('+', ntx+fw/2, fh / 2);
+  draw.save();
+  // left-top-cell
+  draw.addColImg(ntx, 0, fw, fh);
+	
   draw.restore();
 }
 
@@ -319,7 +331,6 @@ class Table {
     const fw = cols.indexWidth;
     // fixed height of header
     const fh = rows.height;
-
     this.draw.resize(data.viewWidth(), data.viewHeight());
     this.clear();
 
@@ -333,6 +344,10 @@ class Table {
     renderContent.call(this, viewRange, fw, fh, -x, -y);
     renderFixedHeaders.call(this, 'all', viewRange, fw, fh, tx, ty);
     renderFixedLeftTopCell.call(this, fw, fh);
+		if (data.settings.showAddCol == true) {
+			renderFixedRightTopAddCol.call(this, 'all', viewRange, fw, fh, tx, ty);
+		}
+		
     const [fri, fci] = data.freeze;
     if (fri > 0 || fci > 0) {
       // 2

@@ -54,4 +54,8 @@ export default {
     min: 'Min',
     concat: 'Concat',
   },
+	sum: {
+    landscape: 'Landscape Sum',
+    portrait: 'Portrait Sum',
+  },
 };

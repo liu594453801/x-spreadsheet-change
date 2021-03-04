@@ -77,6 +77,8 @@ const defaultSettings = {
   showGrid: true,
   showToolbar: true,
   showContextmenu: true,
+	showAddCol:true,
+	showContextmenuAddCol:true,
   row: {
     len: 100,
     height: 25,
@@ -163,7 +165,14 @@ function setStyleBorder(ri, ci, bss) {
     cstyle = helper.cloneDeep(styles[cell.style]);
   }
   cstyle = helper.merge(cstyle, { border: bss });
+	
+	if (cell.text==undefined) {
+		cell.text = '';
+	}
   cell.style = this.addStyle(cstyle);
+	// this.rows.setCell(ri, ci, cell);
+	// console.log('this >>>', this);
+	// console.log('cell.style >>>', cell.style);
 }
 
 function setStyleBorders({ mode, style, color }) {
@@ -404,39 +413,6 @@ export default class DataProxy {
     this.clipboard.copy(this.selector.range);
   }
 
-  copyToSystemClipboard() {
-    if (navigator.clipboard == undefined) {
-      return
-    }
-    var copyText = "";
-    var rowData = this.rows.getData();
-    for (var ri = this.selector.range.sri; ri <= this.selector.range.eri; ri++) {
-      if (rowData.hasOwnProperty(ri)) {
-        for (var ci = this.selector.range.sci; ci <= this.selector.range.eci; ci++) {
-          if (ci > this.selector.range.sci) {
-            copyText += '\t'
-          }
-          if (rowData[ri].cells.hasOwnProperty(ci)) {
-            var cellText = String(rowData[ri].cells[ci].text)
-            if ((cellText.indexOf("\n") == -1) && (cellText.indexOf("\t") == -1) && (cellText.indexOf("\"") == -1)) {
-              copyText += cellText;
-            } else {
-              copyText += "\"" + cellText + "\"";
-            }
-          }
-        }
-      } else {
-        for (var ci = this.selector.range.sci; ci <= this.selector.range.eci; ci++) {
-          copyText += '\t'
-        }
-      }
-      copyText += '\n'
-    }
-    navigator.clipboard.writeText(copyText).then(function () {}, function (err) {
-      console.log('text copy to the system clipboard error  ', copyText, err);
-    });
-  }
-
   cut() {
     this.clipboard.cut(this.selector.range);
   }
@@ -573,7 +549,9 @@ export default class DataProxy {
           } else if (property === 'strike' || property === 'textwrap'
             || property === 'underline'
             || property === 'align' || property === 'valign'
-            || property === 'color' || property === 'bgcolor') {
+            || property === 'color' || property === 'bgcolor'
+						|| property === 'sumlandscape'
+						|| property === 'sumportrait') {
             cstyle[property] = value;
             cell.style = this.addStyle(cstyle);
           } else {
@@ -594,7 +572,10 @@ export default class DataProxy {
     }
     const oldCell = rows.getCell(nri, ci);
     const oldText = oldCell ? oldCell.text : '';
+		// console.log('setSelectedCellText oldCell::', oldCell,oldText);
+		// console.log('setSelectedCellText ::', text,state);
     this.setCellText(nri, ci, text, state);
+
     // replace filter.value
     if (autoFilter.active()) {
       const filter = autoFilter.getFilter(ci);
@@ -703,8 +684,9 @@ export default class DataProxy {
         } = this.cellRect(ri, ci));
       }
     }
+		let colLen = cols.len;
     return {
-      ri, ci, left, top, width, height,
+      ri, ci, left, top, width, height,colLen
     };
   }
 
@@ -821,6 +803,7 @@ export default class DataProxy {
 
   // type: row | column
   insert(type, n = 1) {
+		console.log('insert type:', type);
     this.changeData(() => {
       const { sri, sci } = this.selector.range;
       const { rows, merges, cols } = this;
@@ -846,6 +829,7 @@ export default class DataProxy {
       const {
         rows, merges, selector, cols,
       } = this;
+			
       const { range } = selector;
       const {
         sri, sci, eri, eci,
@@ -856,6 +840,11 @@ export default class DataProxy {
       if (type === 'row') {
         rows.delete(sri, eri);
       } else if (type === 'column') {
+				//代码库修改，详情，列小于8行时不允许删除
+				if (cols.len <= 8 ) {
+					
+					return;
+				}
         rows.deleteColumn(sci, eci);
         si = range.sci;
         size = csize;
@@ -1151,6 +1140,7 @@ export default class DataProxy {
   addStyle(nstyle) {
     const { styles } = this;
     // console.log('old.styles:', styles, nstyle);
+		// console.log('old.styles this:', this);
     for (let i = 0; i < styles.length; i += 1) {
       const style = styles[i];
       if (helper.equals(style, nstyle)) return i;

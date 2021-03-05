@@ -1,6 +1,6 @@
 {
   "name": "x-data-spreadsheet-change",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "a javascript xpreadsheet",
   "types": "src/index.d.ts",
   "main": "src/index.js",
@@ -9,11 +9,11 @@
     "dist",
     "src"
   ],
-  "author": "myliang <liangyuliang0335@gmail.com>",
+  "author": "liu594453801 <594453801@qq.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/myliang/x-spreadsheet.git"
+    "url": "https://github.com/liu594453801/x-spreadsheet-change.git"
   },
   "nyc": {
     "all": true,

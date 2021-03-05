@@ -249,7 +249,7 @@ export default class Editor {
   }
 
   setCell(cell, validator) {
-    // console.log('editor ::', validator);
+    // console.log('::', validator);
     const { el, datepicker, suggest } = this;
     el.show();
     this.cell = cell;

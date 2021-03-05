@@ -56,18 +56,17 @@ export function renderCell(draw, data, rindex, cindex, yoffset = 0) {
   if (sortedRowMap.has(rindex)) {
     nrindex = sortedRowMap.get(rindex);
   }
+
   const cell = data.getCell(nrindex, cindex);
   if (cell === null) return;
   let frozen = false;
   if ('editable' in cell && cell.editable === false) {
     frozen = true;
   }
-	// console.log('renderCell data:', data);
-	// console.log('dbox cell:', cell);
+
   const style = data.getCellStyleOrDefault(nrindex, cindex);
   const dbox = getDrawBox(data, rindex, cindex, yoffset);
   dbox.bgcolor = style.bgcolor;
-	// console.log('dbox style:', style);
   if (style.border !== undefined) {
     dbox.setBorders(style.border);
     // bboxes.push({ ri: rindex, ci: cindex, box: dbox });
@@ -75,14 +74,19 @@ export function renderCell(draw, data, rindex, cindex, yoffset = 0) {
   }
   draw.rect(dbox, () => {
     // render text
-    let cellText = _cell.render(cell.text || '', formulam, (y, x) => (data.getCellTextOrDefault(x, y)));
+    let cellText = "";
+    if(!data.settings.evalPaused) {
+      cellText = _cell.render(cell.text || '', formulam, (y, x) => (data.getCellTextOrDefault(x, y)));
+    } else {
+      cellText = cell.text || '';
+    }
     if (style.format) {
       // console.log(data.formatm, '>>', cell.format);
       cellText = formatm[style.format].render(cellText);
     }
     const font = Object.assign({}, style.font);
     font.size = getFontSizePxByPt(font.size);
-    // console.log('draw.rect style:', style);
+    // console.log('style:', style);
     draw.text(cellText, dbox, {
       align: style.align,
       valign: style.valign,
@@ -218,7 +222,7 @@ function renderFixedHeaders(type, viewRange, w, h, tx, ty) {
       }
     });
     draw.line([0, sumHeight + nty], [w, sumHeight + nty]);
-		draw.line([w, nty], [w, sumHeight + nty]);
+    draw.line([w, nty], [w, sumHeight + nty]);
   }
   // x-header-text
   if (type === 'all' || type === 'top') {
@@ -331,6 +335,7 @@ class Table {
     const fw = cols.indexWidth;
     // fixed height of header
     const fh = rows.height;
+
     this.draw.resize(data.viewWidth(), data.viewHeight());
     this.clear();
 

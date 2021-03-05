@@ -1,6 +1,6 @@
 /* global window */
 import { h } from './element';
-import { bind, mouseMoveUp, bindTouch } from './event';
+import { bind, mouseMoveUp, bindTouch, createEventEmitter } from './event';
 import Resizer from './resizer';
 import Scrollbar from './scrollbar';
 import Selector from './selector';
@@ -177,11 +177,11 @@ function overlayerMousemove(evt) {
   }
 }
 
-let scrollThreshold = 15;
+// let scrollThreshold = 15;
 function overlayerMousescroll(evt) {
-  scrollThreshold -= 1;
-  if (scrollThreshold > 0) return;
-  scrollThreshold = 15;
+  // scrollThreshold -= 1;
+  // if (scrollThreshold > 0) return;
+  // scrollThreshold = 15;
 
   const { verticalScrollbar, horizontalScrollbar, data } = this;
   const { top } = verticalScrollbar.scroll();
@@ -323,6 +323,7 @@ function clearClipboard() {
 function copy() {
   const { data, selector } = this;
   data.copy();
+  data.copyToSystemClipboard();
   selector.showClipboard();
 }
 
@@ -370,7 +371,7 @@ function toolbarChangePaintformatPaste() {
 }
 
 function overlayerMousedown(evt) {
-  console.log(':::::overlayer.mousedown:', evt.detail, evt.button, evt.buttons, evt.shiftKey);
+  // console.log(':::::overlayer.mousedown:', evt.detail, evt.button, evt.buttons, evt.shiftKey);
   // console.log('evt.target.className:', evt.target.className);
   const {
     selector, data, table, sortFilter,
@@ -723,6 +724,7 @@ function sheetInitEvents() {
   });
 
   bind(window, 'paste', (evt) => {
+    if(!this.focusing) return;
     paste.call(this, 'all', evt);
     evt.preventDefault();
   });
@@ -878,7 +880,7 @@ function sheetInitEvents() {
 
 export default class Sheet {
   constructor(targetEl, data) {
-    this.eventMap = new Map();
+    this.eventMap = createEventEmitter();
     const { view, showToolbar, showContextmenu,showContextmenuAddCol } = data.settings;
     this.el = h('div', `${cssPrefix}-sheet`);
     this.toolbar = new Toolbar(data, view.width, !showToolbar);
@@ -935,15 +937,13 @@ export default class Sheet {
   }
 
   on(eventName, func) {
-    this.eventMap.set(eventName, func);
+    this.eventMap.on(eventName, func);
     return this;
   }
 
   trigger(eventName, ...args) {
     const { eventMap } = this;
-    if (eventMap.has(eventName)) {
-      eventMap.get(eventName).call(this, ...args);
-    }
+    eventMap.fire(eventName, args)
   }
 
   resetData(data) {

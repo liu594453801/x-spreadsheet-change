@@ -194,3 +194,8 @@ Modern browsers(chrome, firefox, Safari).
 ## LICENSE
 
 MIT
+
+## 发布npm步骤
+
+npm login
+npm publish

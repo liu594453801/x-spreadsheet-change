@@ -430,13 +430,13 @@ class Draw {
 		let ax = x+5+10;
 		let ay = 12+y;
 		ctx.beginPath();
-		ctx.moveTo(ax-5,y+height/2);
-		ctx.lineTo(ax-5+10,y+height/2);
+		ctx.moveTo(ax-5,y+height/2+2);
+		ctx.lineTo(ax-5+10,y+height/2+2);
 		ctx.stroke();
 
 		ctx.beginPath();
-		ctx.moveTo(ax,y+height/2-5);
-		ctx.lineTo(ax,y+height/2+5);
+		ctx.moveTo(ax,y+height/2-5+2);
+		ctx.lineTo(ax,y+height/2+5+2);
 		ctx.stroke();
 
 		ctx.beginPath();

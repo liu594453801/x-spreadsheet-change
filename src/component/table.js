@@ -102,7 +102,7 @@ export function renderCell(draw, data, rindex, cindex, yoffset = 0) {
       draw.error(dbox);
     }
     if (frozen) {
-      draw.frozen(dbox);
+      draw.frozen(dbox,cell.editableColor);
     }
   });
 }

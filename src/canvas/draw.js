@@ -368,7 +368,7 @@ class Draw {
     ctx.restore();
   }
 
-  frozen(box) {
+  frozen(box,color) {
     const { ctx } = this;
     const { x, y, width } = box;
     const sx = x + width - 1;
@@ -378,7 +378,7 @@ class Draw {
     ctx.lineTo(npx(sx), npx(y - 1));
     ctx.lineTo(npx(sx), npx(y + 8));
     ctx.closePath();
-    ctx.fillStyle = 'rgba(0, 255, 0, .85)';
+    ctx.fillStyle = color?color:'rgba(0, 255, 0, .85)';
     ctx.fill();
     ctx.restore();
   }

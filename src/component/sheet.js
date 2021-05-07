@@ -513,7 +513,13 @@ function insertDeleteRowColumn(type) {
   const { data } = this;
   if (data.settings.mode === 'read') return;
   if (type === 'insert-row') {
-    data.insert('row');
+		//代码库修改
+		this.trigger('touch-insert-row',num=>{
+			if (num>0) {
+				data.insert('row',num);
+			}
+		});
+    // data.insert('row');
   } else if (type === 'delete-row') {
     data.delete('row');
   } else if (type === 'insert-column') {
